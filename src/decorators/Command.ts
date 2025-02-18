@@ -59,7 +59,7 @@ export interface BaseCommand {
 /**
  * The executor of a command.
  */
-export type CommandExecutor = (message: Message) => Promise<unknown> | unknown
+export type CommandExecutor = (message: Message, args?: unknown[]) => Promise<unknown> | unknown
 
 /**
  * Represents a compiled command.

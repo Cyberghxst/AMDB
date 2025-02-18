@@ -1,6 +1,7 @@
+import { enforceRequiredArgs } from '@utils/enforceRequiredArgs'
 import { TelegramEventHandler } from '@structures/EventHandler'
 import { CommandManager } from '@managers/CommandManager'
-import type { Message } from 'telegramsjs'
+import { parseArgs } from '@utils/parseArgs'
 
 export default new TelegramEventHandler({
 	name: 'message',
@@ -22,6 +23,12 @@ export default new TelegramEventHandler({
 		const command = commands.find(cmd => cmd.names.includes(commandName))
 		if (!command) return
 
-		await command.execute(message)
+		if (command.args && !enforceRequiredArgs(args, command.args.map(x => x.name))) {
+			await message.reply(`${command.names[0]} requires ${command.args.length} arguments!`)
+			return;
+		}
+
+		const parsedValues = parseArgs(args, (command.args ?? []).map(x => x.type))
+		await command.execute(message, parsedValues)
 	}
 })

@@ -16,11 +16,8 @@ export default class Any extends Container {
 			}
 		]
 	})
-	async hello(message: Message) {
-		const url = message.toJSON()
-		const result = await instagramGetUrl(
-			'https://www.instagram.com/p/C_-b_j9u5Z4'
-		)
+	async hello(message: Message, [url]: [string]) {
+		const result = await instagramGetUrl(url)
 		console.log([result.url_list])
 	}
 
