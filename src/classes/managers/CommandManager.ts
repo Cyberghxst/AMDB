@@ -1,4 +1,7 @@
 import type { CompiledCommand } from '@decorators/Command'
+import { Container } from '@structures/Container'
+import { recursiveCollectFilePaths } from '@utils/recursiveCollectFilePaths'
+import { join } from 'path'
 
 /**
  * The command manager.
@@ -21,6 +24,23 @@ export class CommandManager {
 	 */
 	static getCommand(cb: (command: CompiledCommand) => boolean) {
 		return CommandManager.toArray().find(cb) ?? null
+	}
+
+	/**
+	 * Load commands from the given directory.
+	 * @param dir - The dir to load the commands from.
+	 * @returns {boolean}
+	 */
+	static load(dir = join(__dirname, '..', '..', 'commands')) {
+		const paths = recursiveCollectFilePaths(dir, f => f.endsWith('.js'))
+		const commands: (typeof Container)[] = paths.map(
+			path => require(path).default
+		)
+		for (const x of commands) {
+			new x()
+		}
+
+		return CommandManager.commands.size > 0
 	}
 
 	/**

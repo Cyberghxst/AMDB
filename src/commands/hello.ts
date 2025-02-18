@@ -1,3 +1,4 @@
+import { AlwaysExecuteCommand } from '@decorators/AlwaysExecuteCommand'
 import { ArgType, Command } from '@decorators/Command'
 import { instagramGetUrl } from 'instagram-url-direct'
 import { Container } from '@structures/Container'
@@ -21,5 +22,10 @@ export default class Any extends Container {
 			'https://www.instagram.com/p/C_-b_j9u5Z4'
 		)
 		console.log([result.url_list])
+	}
+
+	@AlwaysExecuteCommand({ type: 'message' })
+	async ok(message: Message) {
+		await message.reply('ok!')
 	}
 }

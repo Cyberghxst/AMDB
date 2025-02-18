@@ -49,6 +49,11 @@ export interface BaseCommand {
 	 * The arguments this may require.
 	 */
 	args?: CommandArgument[]
+	/**
+	 * Whether mark this command
+	 * as an always execute callback.
+	 */
+	alwaysExecute?: true
 }
 
 /**
