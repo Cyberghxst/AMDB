@@ -1,0 +1,78 @@
+import type { EventHandlers as ClientEvents, Message } from 'telegramsjs'
+import { CommandManager } from '@managers/CommandManager'
+import type { Container } from '@structures/Container'
+
+/**
+ * Constant values representing an argument type.
+ */
+export enum ArgType {
+	Boolean,
+	Float,
+	Integer,
+	Text
+}
+
+/**
+ * A structure representing a command argument.
+ * @example
+ * '/name arg1 arg2'
+ */
+export interface CommandArgument {
+	/**
+	 * The name of the argument.
+	 */
+	name: string
+	/**
+	 * A brief description about the argument.
+	 */
+	description: string
+	/**
+	 * The type of this argument.
+	 */
+	type: ArgType
+}
+
+/**
+ * A structure representing a command.
+ */
+export interface BaseCommand {
+	/**
+	 * The name(s) that can identify this command.
+	 */
+	names: string | string[]
+	/**
+	 * The name of the event this command
+	 * should be executed within.
+	 */
+	type: keyof ClientEvents
+	/**
+	 * The arguments this may require.
+	 */
+	args?: CommandArgument[]
+}
+
+/**
+ * The executor of a command.
+ */
+export type CommandExecutor = (message: Message) => Promise<unknown> | unknown
+
+/**
+ * Represents a compiled command.
+ */
+export interface CompiledCommand extends BaseCommand {
+	execute: CommandExecutor
+}
+
+/**
+ * Takes the function below and compiles to an actual command.
+ * @param data - The command data.
+ * @returns {(target: Container, key: string, descriptor: PropertyDescriptor): void}
+ */
+export function Command(data: BaseCommand) {
+	return (target: Container, key: string, descriptor: PropertyDescriptor) => {
+		if (!target.commands) target.commands = []
+
+		const executor = descriptor.value as CommandExecutor
+		CommandManager.addCommand({ ...data, execute: executor })
+	}
+}
