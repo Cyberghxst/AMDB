@@ -35,11 +35,11 @@ export interface CommandArgument {
 /**
  * A structure representing a command.
  */
-export interface BaseCommand {
+export interface BaseCommand<T = string | string[]> {
 	/**
 	 * The name(s) that can identify this command.
 	 */
-	names: string | string[]
+	names: T
 	/**
 	 * The name of the event this command
 	 * should be executed within.
@@ -54,17 +54,25 @@ export interface BaseCommand {
 	 * as an always execute callback.
 	 */
 	alwaysExecute?: true
+	/**
+	 * Whether mark this command
+	 * as an match command.
+	 */
+	match?: T extends RegExp ? true : never
 }
 
 /**
  * The executor of a command.
  */
-export type CommandExecutor = (message: Message, args?: unknown[]) => Promise<unknown> | unknown
+export type CommandExecutor = (
+	message: Message,
+	args?: unknown[]
+) => Promise<unknown> | unknown
 
 /**
  * Represents a compiled command.
  */
-export interface CompiledCommand extends BaseCommand {
+export interface CompiledCommand<T = string | string[]> extends BaseCommand<T> {
 	execute: CommandExecutor
 }
 

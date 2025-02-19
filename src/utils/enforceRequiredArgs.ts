@@ -1,3 +1,6 @@
-export function enforceRequiredArgs(givenValues: string[], expectedValues: string[]) {
-    return givenValues < expectedValues
+export function enforceRequiredArgs(
+	givenValues: string[],
+	expectedValues: string[]
+) {
+	return givenValues < expectedValues
 }

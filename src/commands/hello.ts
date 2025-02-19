@@ -3,6 +3,7 @@ import { ArgType, Command } from '@decorators/Command'
 import { instagramGetUrl } from 'instagram-url-direct'
 import { Container } from '@structures/Container'
 import type { Message } from 'telegramsjs'
+import { MatchCommand } from '@decorators/MatchCommand'
 
 export default class Any extends Container {
 	@Command({
@@ -24,5 +25,13 @@ export default class Any extends Container {
 	@AlwaysExecuteCommand({ type: 'message' })
 	async ok(message: Message) {
 		await message.reply('ok!')
+	}
+
+	@MatchCommand({
+		names: /hi/g,
+		type: 'message'
+	})
+	async sp(message: Message, matches: string[] | null) {
+		await message.reply(`Matched content: "${matches?.[0]}"`)
 	}
 }
