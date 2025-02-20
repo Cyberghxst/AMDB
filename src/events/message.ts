@@ -1,4 +1,3 @@
-import { enforceRequiredArgs } from '@utils/enforceRequiredArgs'
 import { TelegramEventHandler } from '@structures/EventHandler'
 import { CommandManager } from '@managers/CommandManager'
 import { parseArgs } from '@utils/parseArgs'
@@ -7,7 +6,7 @@ export default new TelegramEventHandler({
 	name: 'message',
 	once: false,
 	async execute(message) {
-		if (message.author?.isBot ?? false) return;
+		if (message.author?.isBot ?? false) return
 		const commands = CommandManager.toArray()
 		const alwaysExecuteCommands = [...commands].filter(x => x.alwaysExecute)
 		if (alwaysExecuteCommands.length > 0) {
@@ -22,15 +21,10 @@ export default new TelegramEventHandler({
 			const command = commands.find(cmd => cmd.names.includes(commandName))
 			if (!command) return
 
-			if (
-				command.args &&
-				!enforceRequiredArgs(
-					args,
-					command.args.map(x => x.name)
-				)
-			) {
+			// Check if enough arguments are passed.
+			if (command.args && command.args.length > args.length) {
 				await message.reply(
-					`${command.names[0]} requires ${command.args.length} arguments!`
+					`Command "${command.names[0]}" requires ${command.args.length} args, but you provided ${args.length}!`
 				)
 				return
 			}
@@ -50,7 +44,7 @@ export default new TelegramEventHandler({
 			const matches = message.content!.match(
 				matchCommand.names as unknown as RegExp
 			)
-			await matchCommand.execute(message, matches as unknown[])
+			await matchCommand.execute(message, matches as string[])
 		}
 	}
 })
