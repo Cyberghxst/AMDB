@@ -1,6 +1,8 @@
 import type { EventHandlers as ClientEvents, Message } from 'telegramsjs'
 import { CommandManager } from '@managers/CommandManager'
 import type { Container } from '@structures/Container'
+import type { ThisArg } from '@structures/ThisArg'
+import type { Return } from '@structures/Return'
 
 /**
  * Constant values representing an argument type.
@@ -65,9 +67,10 @@ export interface BaseCommand<T = string | string[]> {
  * The executor of a command.
  */
 export type CommandExecutor = (
+	this: ThisArg,
 	message: Message,
 	args?: unknown[]
-) => Promise<unknown> | unknown
+) => Promise<Return> | Return
 
 /**
  * Represents a compiled command.

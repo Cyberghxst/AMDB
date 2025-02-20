@@ -1,6 +1,23 @@
 import { TelegramEventHandler } from '@structures/EventHandler'
+import type { CompiledCommand } from '@decorators/Command'
 import { CommandManager } from '@managers/CommandManager'
 import { parseArgs } from '@utils/parseArgs'
+import { ThisArg } from '@structures/ThisArg'
+import type { Message } from 'telegramsjs'
+
+/**
+ * Runs the given command.
+ * @param command - The command to run.
+ * @param message - The current message context.
+ * @param args - The additional args to add.
+ * @returns {Promise<Return>}
+ */
+const runCommand = async (command: CompiledCommand, message: Message, args?: unknown[]) => {
+	const thisArg = new ThisArg()
+	const result = await command.execute.call(thisArg, message, args)
+
+	return result
+}
 
 export default new TelegramEventHandler({
 	name: 'message',
@@ -11,7 +28,14 @@ export default new TelegramEventHandler({
 		const alwaysExecuteCommands = [...commands].filter(x => x.alwaysExecute)
 		if (alwaysExecuteCommands.length > 0) {
 			for (const command of alwaysExecuteCommands) {
-				await command.execute(message)
+				const res = await runCommand(command, message)
+				if (res.isCustomError()) {
+					await message.reply(res.value)
+					break
+				} else if (res.isError()) {
+					await message.reply(res.value.message)
+					break
+				}
 			}
 		}
 
@@ -33,7 +57,12 @@ export default new TelegramEventHandler({
 				args,
 				(command.args ?? []).map(x => x.type)
 			)
-			await command.execute(message, parsedValues)
+			const res = await runCommand(command, message)
+			if (res.isCustomError()) {
+				await message.reply(res.value)
+			} else if (res.isError()) {
+				await message.reply(res.value.message)
+			}
 		} else {
 			const matchCommands = commands.filter(cmd => cmd.match)
 			const matchCommand = matchCommands.find(cmd =>
@@ -44,7 +73,12 @@ export default new TelegramEventHandler({
 			const matches = message.content!.match(
 				matchCommand.names as unknown as RegExp
 			)
-			await matchCommand.execute(message, matches as string[])
+			const res = await runCommand(matchCommand, message, matches as string[])
+			if (res.isCustomError()) {
+				await message.reply(res.value)
+			} else if (res.isError()) {
+				await message.reply(res.value.message)
+			}
 		}
 	}
 })

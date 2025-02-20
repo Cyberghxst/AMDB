@@ -4,8 +4,9 @@ import { instagramGetUrl } from 'instagram-url-direct'
 import { Container } from '@structures/Container'
 import type { Message } from 'telegramsjs'
 import { MatchCommand } from '@decorators/MatchCommand'
-import http from 'https'
+import type { ThisArg } from '@structures/ThisArg'
 import fs, { readFileSync } from 'fs'
+import http from 'https'
 
 function download(url: string, dest: string) {
     return new Promise((resolve, reject) => {
@@ -56,29 +57,30 @@ export default class Any extends Container {
 			}
 		]
 	})
-	async hello(message: Message, [url]: [string]) {
+	async hello(this: ThisArg, message: Message, [url]: [string]) {
 		const result = await instagramGetUrl(url)
 		console.log([result.url_list])
+
+		return this.ok()
+
 	}
 
 	@MatchCommand({
 		names: /(https:\/\/)?www\.instagram\.com\/\w+\/[a-zA-Z0-9_]+/g,
 		type: 'message'
 	})
-	async sp(message: Message, matches: string[]) {
+	async sp(this: ThisArg, message: Message, matches: string[]) {
 		if (!matches === null) return
 
 		const match = matches![0]
 		const result = await instagramGetUrl(match).catch(e => null)
 		if (!result || result.url_list.length === 0) {
-			await message.reply('I was unable to fetch the given media!')
-			return
+			return this.customError('I was unable to fetch the given media!')
 		}
 
 		const response = await fetch(result.url_list[0])
 		if (!response.ok) {
-			await message.reply('I was unable to fetch the given media!')
-			return
+			return this.customError('I was unable to fetch the given media!')
 		}
 
 		const extension = result.url_list[0].split('?')[0].split('.').pop()!
@@ -90,8 +92,7 @@ export default class Any extends Container {
 				photo: image
 			})
 			if (!msg) {
-				await message.reply('I was unable to send the given media!')
-				return
+				return this.customError('I was unable to send the given media!')
 			}
 		} else if (response.headers.get('content-type')?.includes('video')) {
 			const video = readFileSync(`file.${extension}`)
@@ -100,9 +101,10 @@ export default class Any extends Container {
 				video
 			})
 			if (!msg) {
-				await message.reply('I was unable to send the given media!')
-				return
+				return this.customError('I was unable to send the given media!')
 			}
 		}
+
+		return this.ok()
 	}
 }
